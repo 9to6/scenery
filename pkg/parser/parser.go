@@ -113,7 +113,7 @@ func Parse(inputPlan string) (*Plan, error) {
 
 	plan := &Plan{}
 
-	err = p.ParseString(processedPlan, plan)
+	err = p.ParseString("", processedPlan, plan)
 	if err != nil {
 		return nil, ErrParseFailure
 	}

@@ -7,6 +7,7 @@ import (
 	"text/scanner"
 	"unicode/utf8"
 
+	"github.com/alecthomas/participle"
 	"github.com/alecthomas/participle/lexer"
 )
 
@@ -26,7 +27,7 @@ type textScannerLexer struct {
 //
 // Note that this differs from text/scanner.Scanner in that string tokens will
 // be unquoted and new lines are not ignored.
-func (d *SceneryDefinition) Lex(r io.Reader) (lexer.Lexer, error) {
+func (d *SceneryDefinition) Lex(filename string, r io.Reader) (lexer.Lexer, error) {
 	l := &textScannerLexer{
 		filename: nameOfReader(r),
 		scanner:  &scanner.Scanner{},
@@ -36,7 +37,7 @@ func (d *SceneryDefinition) Lex(r io.Reader) (lexer.Lexer, error) {
 	l.scanner.Error = func(s *scanner.Scanner, msg string) {
 		// This is to support single quoted strings. Hacky.
 		if msg != "illegal char literal" {
-			panic(lexer.Errorf(lexer.Position(l.scanner.Pos()), msg))
+			panic(participle.Errorf(lexer.Position(l.scanner.Pos()), msg))
 		}
 	}
 	return l, nil
@@ -79,7 +80,7 @@ func textScannerTransform(token lexer.Token) (lexer.Token, error) {
 	case scanner.String:
 		s, err := strconv.Unquote(token.Value)
 		if err != nil {
-			return lexer.Token{}, lexer.Errorf(token.Pos, "%s: %q", err.Error(), token.Value)
+			return lexer.Token{}, participle.Errorf(token.Pos, "%s: %q", err.Error(), token.Value)
 		}
 		token.Value = s
 		if token.Type == scanner.Char && utf8.RuneCountInString(s) > 1 {
